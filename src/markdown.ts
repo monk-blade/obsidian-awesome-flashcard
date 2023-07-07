@@ -27,6 +27,7 @@ export async function mdToHtml(plugin: AwesomeFlashcardPlugin, content: string):
     // ob gens: "<div src="assets/img/a/a/5/aa58a.png" class="internal-embed"></div>
     // anki wants: <img src="aa58a.png">
     console.log('This is innerHTML : 🔴' + html);
+
     html = await replaceAndUploadMedia(
         html,
         //new RegExp('(<div src="(.+?\\.(gif|jpe?g|tiff?|png|webp|bmp))" class="internal-embed"></div>)', "gi"),
@@ -34,24 +35,22 @@ export async function mdToHtml(plugin: AwesomeFlashcardPlugin, content: string):
         (s: string) => `<img alt="" src="${s}">`,
         plugin
     );
-    //TODO
     // process local audio
     // ob gens: <div src="a.mp3" class="internal-embed"></div>
     // anki wants: <audio controls autoplay="true" src="https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg">
     html = await replaceAndUploadMedia(
         html,
-        new RegExp('(<div src="(.+?\\.(wav|mp3|mid|oga|weba|flac))" class="internal-embed"></div>)', 'gi'),
+        new RegExp('(<span alt=(.*) src="(.+?\\.(wav|mp3|mid|oga|weba|flac))" class="internal-embed">(.*)<\\/span>)', 'gi'),
         (s: string) => `<audio controls autoplay="true" src="${s}">`,
         plugin
     )
-    //TODO
     // process local video
     // ob gens: <div src="b.mp4" class="internal-embed"></div>
     // anki wants: <video controls autoplay="true" src="https://en.wikipedia.org/wiki/File:How_to_make_video.webm">
     // anki windows does not support video tag yet, AnkiDroid does
     html = await replaceAndUploadMedia(
         html,
-        new RegExp('(<div src="(.+?\\.(mp4|mov|wmv|mkv|flv|avi|webm))" class="internal-embed"></div>)', 'gi'),
+        new RegExp('(<span alt=(.*) src="(.+?\\.(mp4|mov|wmv|mkv|flv|avi|webm))" class="internal-embed">(.*)<\\/span>)', 'gi'),
         (s: string) => `<video controls autoplay="true" src="${s}">`,
         plugin
     );

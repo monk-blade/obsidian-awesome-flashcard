@@ -235,7 +235,7 @@ export async function parseNotes(
 
 function addSrcLink(vaultName: string, filePath: string, front: string): string {
     // ob link: obsidian://open?vault=a&file=b.md
-    console.log("🔵Front:" + front);
+    //console.log("🔵Front:" + front);
     const headerlink = '%23' + encodeURIComponent(front.replace(/[^\w\s]/gi, "").trim());
     return `<div style="text-align: left;"><br><br><a href="obsidian://open?vault=${encodeURIComponent(vaultName)}&file=${encodeURIComponent(filePath)}${headerlink}" style="font-size:xx-small;">Source</a></div>`
 }
