@@ -1,10 +1,1 @@
-{
-    "id": "obsidian-awesome-flashcard-rw",
-    "name": "Awesome Flashcard RW",
-    "version": "0.2.0",
-    "minAppVersion": "0.15.0",
-    "description": "Handy Anki integration Rewritten for Obsidian.",
-    "author": "Monk Blade",
-    "authorUrl": "https://github.com/monk-blade/obsidian-awesome-flashcard",
-    "isDesktopOnly": true
-}
+{"id":"obsidian-awesome-flashcard-rw","name":"Awesome Flashcard RW","version":"0.2.1","minAppVersion":"0.15.0","description":"Handy Anki integration for Obsidian.","author":"monk-blade","authorUrl":"https://github.com/monk-blade/obsidian-awesome-flashcard","isDesktopOnly":true}

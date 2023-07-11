@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-awesome-flashcard",
-	"version": "0.1.1",
-	"description": "Handy Anki integration for Obsidian.",
+	"name": "obsidian-awesome-flashcard-rw",
+	"version": "0.2.1",
+	"description": "Handy Anki integration for Obsidian Rewritten for Header Mode. ",
 	"main": "main.js",
 	"scripts": {
 		"clean": "del-cli -f main.js styles.css data.json build",
