@@ -158,7 +158,10 @@ export async function scanFile(filePath: string, plugin: AwesomeFlashcardPlugin)
     }
 
     const vaultName = plugin.app.vault.getName()
-    return await parseNotes(plugin, fileContent, deckName, globalTags, filePath, vaultName)
+    if (deckName.length <= 0 || deckName == "obsidian") { return [] }
+    else {
+        return await parseNotes(plugin, fileContent, deckName, globalTags, filePath, vaultName)
+    }
 }
 
 
@@ -174,21 +177,30 @@ export async function parseNotes(
 
     // const NOTE_REGEXP = /-{3}\n+?((?:(?!^---$)(?!#flashcard)[\s\S]\n?)+) #flashcard((?:[^\n])*)[\n]+?((?:(?!^---$)(?!#flashcard)[\s\S]\n?)+)-{3}/g
     content = content + "\n"
-
-    const regexx = /^#{1,5} [^#]*(?:#(?!#)[^#]*)*/gm;
-    const pCont = content.match(regexx);
-    if (pCont == null)
+    // Logic V2 starte
+    let pCont = content.trimStart().split(/\n\n(?=#{2,5}\s)/);
+    if (pCont == null || deckName.length <= 0 || deckName == "obsidian")
         return res;
-    const processedContent = pCont.filter(x => x.includes('#card')).map((x) => {
-        const lines = x.split('\n');
+    const processedContent = pCont.map((x) => {
+        const lines = x.split("\n");
         const front = lines[0];
-        const back = lines.slice(1).join('\n');
+        const back = lines.slice(1).join("\n");
+
+        // Logic V1 started
+        // const regexx = /^#{1,5} [^#]*(?:#(?!#)[^#]*)*/gm;
+        // const pCont = content.match(regexx);
+        //if (pCont == null)
+        //    return res;
+        //const processedContent = pCont.filter(x => x.includes('#card')).map((x) => {
+        //    const lines = x.split('\n');
+        //    const front = lines[0];
+        //    const back = lines.slice(1).join('\n');
         const tag_regex = /\[\[(.*?)\]\]/g;
         const tmatch = front.match(tag_regex);
         if (tag_regex.test(front)) {
             const pre_tag = tmatch.map(match => match.slice(2, -2));
             const tag = pre_tag.map(x => x.replace(' ', '_'));
-            return [front, tag, back]
+            return [lines[0], tag, back]
         }
         else {
             const tag = 'Obsidian';
@@ -198,6 +210,7 @@ export async function parseNotes(
         //console.log('this is front side of card :\n' + front + '\nthis is back side:\n' + back)
     });
 
+    // Default Code Logic started
     //  const processedContent = content.split("---\n").filter((e, i) => i < content.split("---\n").length - 1).filter((e, i) => i > 0).filter((s) => s.includes("#flashcard")).map((s) => {
     //    const [front, ...rest] = s.split("#flashcard");
     //    const [tag, ...backArr] = rest.join().split("\n");
@@ -205,6 +218,8 @@ export async function parseNotes(
     //console.log(tag);
     //    return [front, tag, back];
     //  });
+    // Default Code Logic ended
+
     console.log("parseNotes... filePath: ", filePath, " processedContent: ", processedContent)
 
     // const mdToHtml = isTestingWithJest() ? (async (s: string) => s) : ((await import('./markdown')).mdToHtml)
@@ -212,10 +227,10 @@ export async function parseNotes(
     for (let noteMatch of processedContent) {
         let [rawFront, rawTag, rawBack]: [string, string, string] = [noteMatch[0], noteMatch[1], noteMatch[2]]
 
-        const front: string = await mdToHtml(plugin, rawFront.replace('#card', ''))
+        //const front: string = await mdToHtml(plugin, rawFront.replace(/\[\[.*?\]\]|#[^\s]+/g, "").trim());
+        const front: string = addSrcLink(vaultName, filePath, rawFront) + await mdToHtml(plugin, rawFront.replace(/\[\[.*?\]\]|#[^\s]+/g, "").trim()) + "</a>";
         let back: string = await mdToHtml(plugin, rawBack)
-        back = back + addSrcLink(vaultName, filePath, rawFront)
-
+        //back = back + addSrcLink(vaultName, filePath, rawFront)
         const tags = getTagsFromRaw(rawTag)
             .concat(globalTags)
             .filter((a) => a)
@@ -235,7 +250,9 @@ export async function parseNotes(
 
 function addSrcLink(vaultName: string, filePath: string, front: string): string {
     // ob link: obsidian://open?vault=a&file=b.md
-    console.log("🔵Front:" + front);
-    const headerlink = '%23' + encodeURIComponent(front.replace(/[^\w\s]/gi, "").trim());
-    return `<div style="text-align: left;"><br><br><a href="obsidian://open?vault=${encodeURIComponent(vaultName)}&file=${encodeURIComponent(filePath)}${headerlink}" style="font-size:xx-small;">Source</a></div>`
+    //console.log("🔵Front:" + front);
+    const headerlink = '%23' + encodeURIComponent(front.replace(/[#\[\]]/g, "").trim());
+    //console.log("🟡Headerlink:" + headerlink);
+    return `<a style="color:#005f87" href="obsidian://open?vault=${encodeURIComponent(vaultName)}&file=${encodeURIComponent(filePath)}${headerlink}">`
+    //return `<div style="text-align: left;"><br><br><a href="obsidian://open?vault=${encodeURIComponent(vaultName)}&file=${encodeURIComponent(filePath)}${headerlink}">🔗</a></div>`
 }

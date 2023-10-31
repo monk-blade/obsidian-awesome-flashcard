@@ -5,12 +5,21 @@
 	zoom: 30%;
 }
 code.is-loaded {
-	zoom: 70%;
+	zoom: 80%;
 }
+
 button.copy-code-button {
 	display: none;
 }
 
+code:not([class*="is-loaded"]) {
+    padding: .2em .4em;
+    margin: 0;
+    font-size: 90%;
+    white-space: break-spaces;
+    background-color: #EFF1F3;
+    border-radius: 6px;
+}
 body {
   /*
 	List of variables is placed in body rather than :root so
