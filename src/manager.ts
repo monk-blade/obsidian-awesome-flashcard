@@ -144,9 +144,11 @@ export async function scanFile(filePath: string, plugin: AwesomeFlashcardPlugin)
     if (!(file instanceof TFile)) {
         return []
     }
+    if (filePath.includes("templates")) {
+        return [];
+    }
 
     const fileContent = await plugin.app.vault.cachedRead(file)
-
     let deckName = plugin.settings.defaultDeckName
     let globalTags: Array<string> = []
     const cache = plugin.app.metadataCache.getCache(filePath)
@@ -177,6 +179,8 @@ export async function parseNotes(
 
     // const NOTE_REGEXP = /-{3}\n+?((?:(?!^---$)(?!#flashcard)[\s\S]\n?)+) #flashcard((?:[^\n])*)[\n]+?((?:(?!^---$)(?!#flashcard)[\s\S]\n?)+)-{3}/g
     content = content + "\n"
+    // Remove YAML header
+    content = content.replace(/---[\s\S]*?---/, '');
     // Logic V2 starte
     let pCont = content.trimStart().split(/\n\n(?=#{2,5}\s)/);
     if (pCont == null || deckName.length <= 0 || deckName == "obsidian")
@@ -195,6 +199,9 @@ export async function parseNotes(
         //    const lines = x.split('\n');
         //    const front = lines[0];
         //    const back = lines.slice(1).join('\n');
+        // if (!front.trim() || !back.trim()) {
+        //     return ["", "", ""]
+        // }
         const tag_regex = /\[\[(.*?)\]\]/g;
         const tmatch = front.match(tag_regex);
         if (tag_regex.test(front)) {
@@ -226,24 +233,30 @@ export async function parseNotes(
 
     for (let noteMatch of processedContent) {
         let [rawFront, rawTag, rawBack]: [string, string, string] = [noteMatch[0], noteMatch[1], noteMatch[2]]
-
+//imp
+        // if (!rawFront.trim() || !rawBack.trim()) {
+        //     return res;
+        // }
         //const front: string = await mdToHtml(plugin, rawFront.replace(/\[\[.*?\]\]|#[^\s]+/g, "").trim());
-        const front: string = addSrcLink(vaultName, filePath, rawFront) + await mdToHtml(plugin, rawFront.replace(/\[\[.*?\]\]|#[^\s]+/g, "").trim()) + "</a>";
+        // const front: string = addSrcLink(vaultName, filePath, rawFront) + await mdToHtml(plugin, rawFront.replace(/\[\[.*?\]\]|#[^\s]+/g, "").trim()) + "</a>";
+        const front: string = addSrcLink(vaultName, filePath, rawFront) + await mdToHtml(plugin, rawFront) + "</a>";
         let back: string = await mdToHtml(plugin, rawBack)
         //back = back + addSrcLink(vaultName, filePath, rawFront)
         const tags = getTagsFromRaw(rawTag)
             .concat(globalTags)
             .filter((a) => a)
 
-        const note = new AnkiConnectNoteExt(
-            deckName,
-            front,
-            back,
-            tags,
-            filePath
-        )
-        console.log(JSON.stringify(note, null, 2))
-        res.push(note)
+        if (rawFront.trim() !== "" || rawBack.trim() !== "") {
+            const note = new AnkiConnectNoteExt(
+                deckName,
+                front,
+                back,
+                tags,
+                filePath
+            )
+            console.log(JSON.stringify(note, null, 2))
+            res.push(note)
+        }
     }
     return res
 }
